@@ -1,0 +1,7 @@
+[run]
+source =  err-slack-twilio-lookup 
+[report]
+omit =
+    */python?.?/*
+    */site-packages/err/*
+    */site-packages/py.test/*
