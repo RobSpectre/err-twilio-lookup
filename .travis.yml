@@ -1,12 +1,10 @@
 language: python
-python:
-  - 2.7
-  - 3.3
-  - 3.4
 install:
-  - pip install -q err pytest pytest-pep8 --use-wheel
-  - pip install -q coverage coveralls --use-wheel
+  - pip install tox 
 script:
-  - coverage run --source err-twilio-lookup -m py.test --pep8
+  - tox
+env:
+  - TOXENV: py33
+  - TOXENV: py34
 after_success:
   - coveralls
