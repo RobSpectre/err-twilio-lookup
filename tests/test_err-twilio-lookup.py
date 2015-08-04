@@ -168,7 +168,7 @@ class TestTwilioLookupUtilities(TestTwilioLookup):
         self.assertEquals(expected, result)
 
     def test_sanitize_number_no_digits(self):
-        expected = "Could not find a number in this input: error"
+        expected = "Could not find a number here: error"
         result = self.plugin.sanitize_number("error")
         self.assertEquals(expected, result)
 
