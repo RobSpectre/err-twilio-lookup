@@ -15,24 +15,58 @@ class TwilioLookup(BotPlugin):
     min_err_version = '1.6.0'
     max_err_version = '3.0.0'
 
+    def get_configuration_template(self):
+        return {'TWILIO_ACCOUNT_SID': "ACxxxxx",
+                'TWILIO_AUTH_TOKEN': "yyyyyyyy"
+                }
+
+    def check_configuration(self, configuration):
+        if configuration is not None:
+            self.TWILIO_ACCOUNT_SID = configuration.get('TWILIO_ACCOUNT_SID',
+                                                        None)
+            self.TWILIO_AUTH_TOKEN = configuration.get('TWILIO_AUTH_TOKEN',
+                                                       None)
+            if self.TWILIO_ACCOUNT_SID and self.TWILIO_AUTH_TOKEN:
+                super(TwilioLookup, self).check_configuration(configuration)
+            else:
+                logging.info("Could not find TWILIO_ACCOUNT_SID or "
+                             "TWILIO_AUTH_TOKEN in plugin configuration. ")
+                return
+
+        return
+
     def activate(self):
-        if self.config is not None:
+        if self.config is None:
+            logging.info("TwilioLookup not configured - plugin not "
+                         "activating.")
+        else:
             self.TWILIO_ACCOUNT_SID = self.config.get('TWILIO_ACCOUNT_SID',
                                                       None)
             self.TWILIO_AUTH_TOKEN = self.config.get('TWILIO_AUTH_TOKEN',
                                                      None)
             if self.TWILIO_ACCOUNT_SID and self.TWILIO_AUTH_TOKEN:
+                self.lookup_client = TwilioLookupsClient(self.TWILIO_ACCOUNT_SID,
+                                                         self.TWILIO_AUTH_TOKEN)
                 super(TwilioLookup, self).activate()
-                self.lookup = TwilioLookupsClient(self.TWILIO_ACCOUNT_SID,
-                                                  self.TWILIO_AUTH_TOKEN)
+                logging.info("Starting TwilioLookup.")
             else:
-                logging.info("Not starting TwilioLookup, configuration "
-                             "missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN")
-        else:
-            logging.info("Not starting TwilioLookup, plugin not configured.")
+                logging.info("Not starting TwilioLookup - could not find "
+                             "Twilio credentials in configuration.")
 
     @botcmd
     def lookup(self, message, args):
+        """ Lookup information on a phone number using Twilio Lookup.
+        
+        With E.164 formatting:
+        !lookup +15108675309
+
+        With local formatting:
+        !lookup UK 020 8366 1177
+
+       
+        Lovingly craft by your friendly neighborhood Twilio developer network
+        crew.
+        """
         number = self.sanitize_number(args)
 
         if hasattr(number, "country_code"):
@@ -57,8 +91,9 @@ class TwilioLookup(BotPlugin):
 
     def lookup_e164_number(self, number_string):
         try:
-            return self.lookup.phone_numbers.get(number_string,
-                                                 include_carrier_info=True)
+            kwargs = {'include_carrier_info': True}
+            return self.lookup_client.phone_numbers.get(number_string,
+                                                        **kwargs)
         except TwilioRestException as e:
             return "Could not find information on phone number " \
                    "{0}: {1}".format(number_string, e)
@@ -69,15 +104,19 @@ class TwilioLookup(BotPlugin):
                    "{0}".format(number)
         if any(character.isalpha() for character in number):
             split = number.split(" ")
-            if len(split) == 2:
-                number = phonenumbers.parse(split[0], split[1])
+            if len(split) > 1 and len(split[0]) == 2:
+                number = phonenumbers.parse("".join(split[1:]),
+                                            split[0])
             else:
                 # Gross hack as PhoneNumberMatcher doesn't support indexing.
                 for match in phonenumbers.PhoneNumberMatcher(number, "US"):
                     number = match.number
                     break
         else:
-            number = phonenumbers.parse(number)
+            try:
+                number = phonenumbers.parse(number)
+            except phonenumbers.phonenumberutil.NumberParseException as e:
+                number = phonenumbers.parse(number, "US")
 
         number = self.validate_number(number)
 

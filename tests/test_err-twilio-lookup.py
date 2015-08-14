@@ -63,7 +63,7 @@ class TestTwilioLookupCommands(TestTwilioLookup):
 
         request.return_value = response
 
-        self.assertCommand('!lookup (510)867-5309 US',
+        self.assertCommand('!lookup US (510)867-5309',
                            'I found a US mobile number (510) 867-5309.')
         request.assert_called_with('GET',
                                    'https://lookups.twilio.com/v1'
@@ -100,6 +100,24 @@ class TestTwilioLookupCommands(TestTwilioLookup):
 
         self.bot.push_message("!lookup Hey there - can you look up"
                               " (510) 8675309?")
+        self.bot.pop_message()
+        self.assertIn("Twilio", self.bot.pop_message())
+        request.assert_called_with('GET',
+                                   'https://lookups.twilio.com/v1'
+                                   '/PhoneNumbers/+15108675309',
+                                   auth=('ACxxxxx', 'yyyyyyyy'),
+                                   params={'Type': 'carrier'},
+                                   use_json_extension=False)
+
+    @patch("twilio.rest.resources.base.make_twilio_request")
+    def test_lookup_with_common_US_format(self, request):
+        response = create_mock_json(
+            "tests/resources/phone_number_instance_twilio.json"
+        )
+
+        request.return_value = response
+
+        self.bot.push_message("!lookup (510) 867-5309?")
         self.bot.pop_message()
         self.assertIn("Twilio", self.bot.pop_message())
         request.assert_called_with('GET',
@@ -184,9 +202,11 @@ class TestTwilioLookupWithoutConfiguration(FullStackTest):
         self.assertFalse("TwilioLookup" in plugin_list)
 
     def test_wrong_configuration(self):
+        self.bot.deactivate_plugin_by_name('TwilioLookup')
         incomplete_configuration = {"TWILIO_ACCOUNT_SID": "ACxxxx"}
         self.bot.set_plugin_configuration('TwilioLookup',
                                           incomplete_configuration)
+
         self.bot.activate_plugin('TwilioLookup')
 
         plugin_list = self.bot.get_all_active_plugin_names()
