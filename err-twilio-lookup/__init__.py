@@ -1,5 +1,3 @@
-import logging
-
 from errbot import BotPlugin
 from errbot import botcmd
 
@@ -29,16 +27,16 @@ class TwilioLookup(BotPlugin):
             if self.TWILIO_ACCOUNT_SID and self.TWILIO_AUTH_TOKEN:
                 super(TwilioLookup, self).check_configuration(configuration)
             else:
-                logging.info("Could not find TWILIO_ACCOUNT_SID or "
-                             "TWILIO_AUTH_TOKEN in plugin configuration. ")
+                self.log.info("Could not find TWILIO_ACCOUNT_SID or "
+                              "TWILIO_AUTH_TOKEN in plugin configuration. ")
                 return
 
         return
 
     def activate(self):
         if self.config is None:
-            logging.info("TwilioLookup not configured - plugin not "
-                         "activating.")
+            self.log.info("TwilioLookup not configured - plugin not "
+                          "activating.")
         else:
             self.TWILIO_ACCOUNT_SID = self.config.get('TWILIO_ACCOUNT_SID',
                                                       None)
@@ -48,22 +46,22 @@ class TwilioLookup(BotPlugin):
                 self.lookup_client = TwilioLookupsClient(self.TWILIO_ACCOUNT_SID,
                                                          self.TWILIO_AUTH_TOKEN)
                 super(TwilioLookup, self).activate()
-                logging.info("Starting TwilioLookup.")
+                self.log.info("Starting TwilioLookup.")
             else:
-                logging.info("Not starting TwilioLookup - could not find "
-                             "Twilio credentials in configuration.")
+                self.log.info("Not starting TwilioLookup - could not find "
+                              "Twilio credentials in configuration.")
 
     @botcmd
     def lookup(self, message, args):
         """ Lookup information on a phone number using Twilio Lookup.
-        
+
         With E.164 formatting:
         !lookup +15108675309
 
         With local formatting:
         !lookup UK 020 8366 1177
 
-       
+
         Lovingly craft by your friendly neighborhood Twilio developer network
         crew.
         """
