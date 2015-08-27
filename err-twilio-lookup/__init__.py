@@ -84,7 +84,7 @@ class TwilioLookup(BotPlugin):
                           "number :twilio:."
                 else:
                     yield "It tragically belongs to " \
-                          "{0}".format(number.carrier['name'])
+                          "{0}.".format(number.carrier['name'])
             else:
                 yield number
 
