@@ -42,8 +42,10 @@ class TwilioLookup(BotPlugin):
             self.TWILIO_AUTH_TOKEN = self.config.get('TWILIO_AUTH_TOKEN',
                                                      None)
             if self.TWILIO_ACCOUNT_SID and self.TWILIO_AUTH_TOKEN:
-                self.lookup_client = TwilioLookupsClient(self.TWILIO_ACCOUNT_SID,
-                                                         self.TWILIO_AUTH_TOKEN)
+                lookup_client = TwilioLookupsClient(self.TWILIO_ACCOUNT_SID,
+                                                    self.TWILIO_AUTH_TOKEN)
+                self.lookup_client = lookup_client
+
                 super(TwilioLookup, self).activate()
                 self.log.info("Starting TwilioLookup.")
             else:
@@ -83,8 +85,8 @@ class TwilioLookup(BotPlugin):
                 else:
                     yield "It tragically belongs to " \
                           "{0}".format(number.carrier['name'])
-
-        yield number
+            else:
+                yield number
 
     def lookup_e164_number(self, number_string):
         try:
