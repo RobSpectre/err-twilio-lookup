@@ -11,7 +11,6 @@ class TwilioLookup(BotPlugin):
     """An err plugin for retrieving information on phone numbers using Twilio
     Lookup."""
     min_err_version = '1.6.0'
-    max_err_version = '3.0.0'
 
     def get_configuration_template(self):
         return {'TWILIO_ACCOUNT_SID': "ACxxxxx",
