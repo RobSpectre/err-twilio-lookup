@@ -27,14 +27,14 @@ Installation
 Install this `err`_ plugin using err's handy installation utilities by typing
 the following into a room with your errbot.
 
-.. code-block: bash
+.. code-block:: bash
   
     !repos install https://github.com/RobSpectre/err-twilio-lookup
 
 
 Then configure the bot with your `Twilio credentials`_.
 
-.. code-block: bash
+.. code-block:: bash
    
     !plugin config TwilioLookup {'TWILIO_ACCOUNT_SID': 'ACxxxx', 'TWILIO_AUTH_TOKEN':
     'yyyyyyyy'}
@@ -42,7 +42,7 @@ Then configure the bot with your `Twilio credentials`_.
 
 Totally lookup information about phone numbers.
 
-.. code-block: bash
+.. code-block:: bash
 
     !lookup 5108675309
 
